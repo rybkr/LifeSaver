@@ -33,12 +33,26 @@ struct Arena: Sendable, Equatable {
     static func seeded(_ seed: UInt64) -> Arena {
         var random = SeededRandom(state: seed)
         var board = Arena()
-        // Mirrored colonies give both players identical starting resources.
-        // A stable core prevents a random seed from dying before the first move.
-        for y in 7..<17 {
-            for x in 6..<14 where random.unit() < 0.33 || (x < 8 && y < 9) {
+        // Random 8×8 regions, related by a half-turn around the board center.
+        // Two empty rows/columns separate the regions; both have equal edge clearance.
+        let size = 8, margin = 2, separation = 2
+        var origins: [(x: Int, y: Int)] = []
+        for y in margin...(height - margin - size) {
+            for x in margin...(width - margin - size) {
+                let otherX = width - x - size, otherY = height - y - size
+                if abs(otherX - x) >= size + separation || abs(otherY - y) >= size + separation {
+                    origins.append((x, y))
+                }
+            }
+        }
+        let origin = origins[random.index(origins.count)]
+        for dy in 0..<size {
+            for dx in 0..<size {
+                let core = (3...4).contains(dx) && (3...4).contains(dy)
+                guard random.unit() < 0.33 || core else { continue }
+                let x = origin.x + dx, y = origin.y + dy
                 board.cells[y * width + x] = Player.amber.rawValue
-                board.cells[y * width + width - 1 - x] = Player.blue.rawValue
+                board.cells[(height - 1 - y) * width + width - 1 - x] = Player.blue.rawValue
             }
         }
         return board

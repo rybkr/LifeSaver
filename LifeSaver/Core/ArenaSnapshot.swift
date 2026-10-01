@@ -16,9 +16,12 @@ struct ArenaSnapshot: Sendable {
     var trainedMatches: Int
     var trainingStatus: String
     var updatedAt: Double
+    var ages = CellAges()
+    var generationInterval = 1.0 / 8
+    var birthTimes: [Double]? = nil
 
     static func initial() -> ArenaSnapshot {
-        let board = Arena.seeded(2026)
+        let board = Arena()
         return ArenaSnapshot(board: board, previous: board, placements: [], generation: 0, round: 1,
             averageAdvantage: 0, finished: false, winner: nil, evolution: 0, evaluated: 0,
             evaluationTotal: 128, trainedMatches: 0, trainingStatus: "Starting players", updatedAt: 0)

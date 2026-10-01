@@ -85,15 +85,11 @@ final class SimulationSession {
         worker = Task.detached(priority: .utility) { [weak self] in
             let store = CheckpointStore(directory: directory)
             var evolution = Evolution(checkpoint: store.load())
-            var random = SeededRandom(state: UInt64(Date().timeIntervalSince1970))
-            var match = Match(seed: random.next(), amber: evolution.checkpoint.champion, blue: evolution.checkpoint.challenger)
-            var previous = match.board
-            var round = 1
-            var nextFrame = 0.0
-            var finishedAt: Double?
+            var playback = MatchPlayback(seed: UInt64(Date().timeIntervalSince1970),
+                amber: evolution.checkpoint.champion, blue: evolution.checkpoint.challenger,
+                now: ProcessInfo.processInfo.systemUptime)
             var lastSave = ProcessInfo.processInfo.systemUptime
             var nextLockAttempt = 0.0
-            var frameTime = 0.0
             while !Task.isCancelled {
                 guard let control = await self?.control(for: id) else { break }
                 let started = ProcessInfo.processInfo.systemUptime
@@ -109,24 +105,8 @@ final class SimulationSession {
                     store.save(evolution.checkpoint)
                     store.release()
                 }
-                if started >= nextFrame {
-                    previous = match.board
-                    if match.finished {
-                        if finishedAt == nil { finishedAt = started }
-                        if started - finishedAt! >= 3 {
-                            round += 1
-                            // Swap champion colors each round; weights stay fixed within a match.
-                            let a = round.isMultiple(of: 2) ? evolution.checkpoint.challenger : evolution.checkpoint.champion
-                            let b = round.isMultiple(of: 2) ? evolution.checkpoint.champion : evolution.checkpoint.challenger
-                            match = Match(seed: random.next(), amber: a, blue: b)
-                            previous = match.board
-                            finishedAt = nil
-                        }
-                    } else { match.advance() }
-                    frameTime = ProcessInfo.processInfo.systemUptime
-                    let interval = 1 / control.0.generationsPerSecond
-                    nextFrame = nextFrame == 0 ? frameTime + interval : max(nextFrame + interval, frameTime)
-                }
+                playback.advance(now: started, generationsPerSecond: control.0.generationsPerSecond,
+                    champion: evolution.checkpoint.champion, challenger: evolution.checkpoint.challenger)
                 var trainingTime = 0.0
                 if wantsTraining && store.ownsLock {
                     let before = ProcessInfo.processInfo.systemUptime
@@ -141,11 +121,12 @@ final class SimulationSession {
                     }
                 }
                 let status = store.error ?? (wantsTraining ? (store.ownsLock ? "Learning" : "Learning in another window") : (control.1 ? "Learning paused" : "Preview · learning paused"))
-                let snapshot = ArenaSnapshot(board: match.board, previous: previous, placements: match.lastPlacements,
-                    generation: match.generation, round: round, averageAdvantage: match.averageAdvantage,
-                    finished: match.finished, winner: match.winner, evolution: evolution.checkpoint.generation,
-                    evaluated: evolution.evaluatedThisRound, evaluationTotal: evolution.evaluationsPerRound,
-                    trainedMatches: evolution.checkpoint.completedMatches, trainingStatus: status, updatedAt: frameTime)
+                var snapshot = playback.snapshot()
+                snapshot.evolution = evolution.checkpoint.generation
+                snapshot.evaluated = evolution.evaluatedThisRound
+                snapshot.evaluationTotal = evolution.evaluationsPerRound
+                snapshot.trainedMatches = evolution.checkpoint.completedMatches
+                snapshot.trainingStatus = status
                 await self?.publish(snapshot, for: id)
                 // Four units of rest per unit of training: ~20% of one worker's time,
                 // plus visible match work. A single neural move is not preemptible.

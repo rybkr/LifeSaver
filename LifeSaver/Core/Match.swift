@@ -1,6 +1,7 @@
 import Foundation
 
 struct Match: Sendable {
+    // Training needs a finite evaluation horizon; visible matches default to no limit.
     static let generationLimit = 1_000
     static let moveInterval = 8
     private(set) var board: Arena
@@ -8,18 +9,23 @@ struct Match: Sendable {
     private(set) var cumulativeDifference = 0
     private(set) var finished = false
     private(set) var lastPlacements: Set<Int> = []
+    private(set) var lastMoveWasEmergency = false
+    private var history = BoardHistory()
     let amber: PolicyNetwork
     let blue: PolicyNetwork
-    let limit: Int
+    let limit: Int?
 
-    init(seed: UInt64, amber: PolicyNetwork, blue: PolicyNetwork, limit: Int = generationLimit, board: Arena? = nil) {
+    init(seed: UInt64, amber: PolicyNetwork, blue: PolicyNetwork, limit: Int? = nil, board: Arena? = nil) {
         self.board = board ?? .seeded(seed)
         self.amber = amber
         self.blue = blue
-        self.limit = max(1, limit)
+        self.limit = limit.map { max(1, $0) }
+        history.reset(to: self.board)
     }
 
-    var averageAdvantage: Double { Double(cumulativeDifference) / Double(finished ? limit : max(1, generation)) }
+    var averageAdvantage: Double {
+        Double(cumulativeDifference) / Double(finished ? (limit ?? max(1, generation)) : max(1, generation))
+    }
     var winner: Player? {
         guard finished else { return nil }
         if board.population(.amber) == 0 && board.population(.blue) == 0 { return nil }
@@ -29,22 +35,42 @@ struct Match: Sendable {
     }
 
     mutating func advance() {
+        let a = amber, b = blue
+        advance { board, player, budget in
+            (player == .amber ? a : b).placements(board: board, player: player, budget: budget)
+        }
+    }
+
+    /// The decision seam also allows deterministic rule checks without neural inference.
+    mutating func advance(chooseMove: (Arena, Player, Int) -> [Int]) {
         guard !finished else { return }
         lastPlacements = []
+        lastMoveWasEmergency = false
         if generation.isMultiple(of: Self.moveInterval) {
-            let a = amber.placements(board: board, player: .amber)
-            let b = blue.placements(board: board, player: .blue)
-            lastPlacements = board.reinforce(amber: a, blue: b)
+            reinforce(budget: 3, chooseMove: chooseMove)
         }
         board.step()
         generation += 1
+        let extinct = board.population(.amber) == 0 || board.population(.blue) == 0
+        let timedOut = limit.map { generation >= $0 } ?? false
+        if !extinct && !timedOut && history.observe(board) {
+            // Both choose from the same repeated position, before either move applies.
+            // Show the new chips immediately; Life evaluates them on the next frame.
+            lastMoveWasEmergency = true
+            reinforce(budget: 1, chooseMove: chooseMove)
+            history.reset(to: board)
+        }
         cumulativeDifference += board.difference
-        if board.population(.amber) == 0 || board.population(.blue) == 0 {
-            // Treat the terminal population as held through the rest of the match,
-            // so every candidate is evaluated over the same time horizon.
+        if extinct, let limit {
             cumulativeDifference += board.difference * (limit - generation)
-            finished = true
-        } else if generation >= limit { finished = true }
+        }
+        finished = extinct || timedOut
+    }
+
+    private mutating func reinforce(budget: Int, chooseMove: (Arena, Player, Int) -> [Int]) {
+        let a = chooseMove(board, .amber, budget)
+        let b = chooseMove(board, .blue, budget)
+        lastPlacements.formUnion(board.reinforce(amber: a, blue: b, budget: budget))
     }
 }
 

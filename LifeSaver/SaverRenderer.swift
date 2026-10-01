@@ -55,19 +55,31 @@ enum SaverRenderer {
         let deviceOrigin = context.convertToDeviceSpace(centered)
         let origin = context.convertToUserSpace(CGPoint(x: deviceOrigin.x.rounded(), y: deviceOrigin.y.rounded()))
         let material = cells(pixels: pixels)
-        let progress = reduceMotion ? 1 : min(1, max(0, (now - snapshot.updatedAt) / 0.08))
+        let generationProgress = ArenaPresentation.progress(now: now, updatedAt: snapshot.updatedAt,
+            interval: snapshot.generationInterval, reduceMotion: reduceMotion)
         for index in snapshot.board.cells.indices {
-            let current = snapshot.board.cells[index], old = snapshot.previous.cells[index]
-            let value = current == 0 ? old : current
-            guard let player = Player(rawValue: value) else { continue }
-            let opacity = current == 0 ? 0.25 * (1 - progress) : (old == current ? 1 : 0.8 + 0.2 * progress)
-            guard opacity > 0 else { continue }
+            let current = snapshot.board.cells[index]
+            let born = snapshot.birthTimes?[index]
+            let introducing = born?.isFinite == true
+            let old: UInt8 = introducing ? 0 : snapshot.previous.cells[index]
+            let progress = introducing ? (reduceMotion ? 1 : ArenaPresentation.eased((now - born!) / MatchPlayback.chipAnimation)) : generationProgress
+            let layers = ArenaPresentation.layers(from: old, to: current, progress: progress)
+            guard !layers.isEmpty else { continue }
             let x = index % Arena.width, y = index / Arena.width
-            context.setAlpha(opacity)
-            context.draw(player == .amber ? material.amber : material.blue,
-                in: CGRect(x: origin.x + CGFloat(x) * pitch,
-                           y: origin.y + CGFloat(Arena.height - 1 - y) * pitch,
-                           width: pitch, height: pitch))
+            let oldIntensity = CellAges.intensity(at: snapshot.ages.previous[index])
+            let newIntensity = CellAges.intensity(at: snapshot.ages.current[index])
+            let rect = CGRect(x: origin.x + CGFloat(x) * pitch,
+                              y: origin.y + CGFloat(Arena.height - 1 - y) * pitch, width: pitch, height: pitch)
+            for layer in layers {
+                let intensity = layer.departing ? oldIntensity :
+                    (current == old ? oldIntensity + (newIntensity - oldIntensity) * progress : newIntensity)
+                let opacity = layer.opacity * intensity
+                guard opacity > 0.001 else { continue }
+                context.setAlpha(opacity)
+                let inset = pitch * (1 - layer.scale) / 2
+                context.draw(layer.player == .amber ? material.amber : material.blue,
+                             in: rect.insetBy(dx: inset, dy: inset))
+            }
         }
     }
 
