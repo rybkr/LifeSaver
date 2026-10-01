@@ -2,35 +2,45 @@ import AppKit
 import ImageIO
 import UniformTypeIdentifiers
 
-/// Deterministic visual study using the same renderer as the installed saver.
 @main
 struct RenderMotion {
     @MainActor static func main() throws {
-        let width = 960
-        let height = 600
-        let url = URL(fileURLWithPath: "build/clock-motion.gif")
-        let destination = CGImageDestinationCreateWithURL(url as CFURL, UTType.gif.identifier as CFString, 120, nil)!
+        let width = 1000, height = 800, frames = 300
+        let url = URL(fileURLWithPath: "build/lifesaver-motion.gif")
+        let destination = CGImageDestinationCreateWithURL(url as CFURL, UTType.gif.identifier as CFString, frames, nil)!
         CGImageDestinationSetProperties(destination, [kCGImagePropertyGIFDictionary: [kCGImagePropertyGIFLoopCount: 0]] as CFDictionary)
-        var cycle = SaverCycle(columns: 240, rows: 150, settings: SaverSettings(), now: 0, unixTime: 1_800_000_009)
-        for frame in 0..<120 {
+        let evolution = Evolution(seed: 2026)
+        var match = Match(seed: 2026, amber: evolution.checkpoint.champion, blue: evolution.checkpoint.challenger)
+        var snapshot = ArenaSnapshot.initial()
+        snapshot.trainingStatus = "Preview · untrained players"
+        for frame in 0..<frames {
             try autoreleasepool {
                 let now = Double(frame) / 30
-                cycle.advance(now: now, unixTime: 1_800_000_009 + Int64(max(0, now - 0.6)))
+                if match.generation < Int(now * 12) && !match.finished {
+                    snapshot.previous = match.board
+                    match.advance()
+                    snapshot.updatedAt = now
+                    snapshot.board = match.board
+                    snapshot.placements = match.lastPlacements
+                    snapshot.generation = match.generation
+                    snapshot.averageAdvantage = match.averageAdvantage
+                    snapshot.finished = match.finished
+                    snapshot.winner = match.winner
+                }
                 let bitmap = NSBitmapImageRep(bitmapDataPlanes: nil, pixelsWide: width, pixelsHigh: height,
                     bitsPerSample: 8, samplesPerPixel: 4, hasAlpha: true, isPlanar: false,
                     colorSpaceName: .deviceRGB, bytesPerRow: 0, bitsPerPixel: 0)!
                 NSGraphicsContext.saveGraphicsState()
                 NSGraphicsContext.current = NSGraphicsContext(bitmapImageRep: bitmap)
-                SaverRenderer.draw(cycle: cycle, in: NSRect(x: 0, y: 0, width: width, height: height),
-                                   cellPitch: 4, now: now, reduceMotion: false)
+                SaverRenderer.draw(snapshot: snapshot, in: NSRect(x: 0, y: 0, width: width, height: height), now: now, reduceMotion: false)
                 NSGraphicsContext.restoreGraphicsState()
                 CGImageDestinationAddImage(destination, bitmap.cgImage!, [kCGImagePropertyGIFDictionary: [kCGImagePropertyGIFDelayTime: 1.0 / 30]] as CFDictionary)
-                if [12, 40, 52, 70].contains(frame) {
-                    try bitmap.representation(using: .png, properties: [:])!.write(to: URL(fileURLWithPath: "build/motion-\(frame).png"))
+                if [0, 90, 299].contains(frame) {
+                    try bitmap.representation(using: .png, properties: [:])!.write(to: URL(fileURLWithPath: "build/lifesaver-\(frame).png"))
                 }
             }
         }
         precondition(CGImageDestinationFinalize(destination))
-        print("Rendered build/clock-motion.gif and four review frames")
+        print("Rendered build/lifesaver-motion.gif and three review frames")
     }
 }

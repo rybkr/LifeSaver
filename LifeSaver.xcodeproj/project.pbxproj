@@ -7,13 +7,13 @@
 	objects = {
 
 /* Begin PBXFileReference section */
-		3782A69A306DB92A00E6593D /* UnixLife.saver */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = UnixLife.saver; sourceTree = BUILT_PRODUCTS_DIR; };
+		3782A69A306DB92A00E6593D /* LifeSaver.saver */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = LifeSaver.saver; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		3782A69C306DB92A00E6593D /* UnixLife */ = {
+		3782A69C306DB92A00E6593D /* LifeSaver */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			path = UnixLife;
+			path = LifeSaver;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -32,7 +32,7 @@
 		3782A690306DB92A00E6593D = {
 			isa = PBXGroup;
 			children = (
-				3782A69C306DB92A00E6593D /* UnixLife */,
+				3782A69C306DB92A00E6593D /* LifeSaver */,
 				3782A69B306DB92A00E6593D /* Products */,
 			);
 			sourceTree = "<group>";
@@ -40,7 +40,7 @@
 		3782A69B306DB92A00E6593D /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				3782A69A306DB92A00E6593D /* UnixLife.saver */,
+				3782A69A306DB92A00E6593D /* LifeSaver.saver */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -58,9 +58,9 @@
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
-		3782A699306DB92A00E6593D /* UnixLife */ = {
+		3782A699306DB92A00E6593D /* LifeSaver */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 3782A6A3306DB92A00E6593D /* Build configuration list for PBXNativeTarget "UnixLife" */;
+			buildConfigurationList = 3782A6A3306DB92A00E6593D /* Build configuration list for PBXNativeTarget "LifeSaver" */;
 			buildPhases = (
 				3782A695306DB92A00E6593D /* Headers */,
 				3782A696306DB92A00E6593D /* Sources */,
@@ -72,13 +72,13 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				3782A69C306DB92A00E6593D /* UnixLife */,
+				3782A69C306DB92A00E6593D /* LifeSaver */,
 			);
-			name = UnixLife;
+			name = LifeSaver;
 			packageProductDependencies = (
 			);
-			productName = UnixLife;
-			productReference = 3782A69A306DB92A00E6593D /* UnixLife.saver */;
+			productName = LifeSaver;
+			productReference = 3782A69A306DB92A00E6593D /* LifeSaver.saver */;
 			productType = "com.apple.product-type.bundle";
 		};
 /* End PBXNativeTarget section */
@@ -95,7 +95,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 3782A694306DB92A00E6593D /* Build configuration list for PBXProject "UnixLife" */;
+			buildConfigurationList = 3782A694306DB92A00E6593D /* Build configuration list for PBXProject "LifeSaver" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -109,7 +109,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				3782A699306DB92A00E6593D /* UnixLife */,
+				3782A699306DB92A00E6593D /* LifeSaver */,
 			);
 		};
 /* End PBXProject section */
@@ -257,18 +257,18 @@
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 4;
 				DEVELOPMENT_TEAM = 57935535S7;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
-				INFOPLIST_KEY_NSPrincipalClass = UnixLifeView;
+				INFOPLIST_KEY_NSPrincipalClass = LifeSaverView;
 				INSTALL_PATH = "$(HOME)/Library/Screen Savers";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@loader_path/../Frameworks",
 				);
-				MARKETING_VERSION = 1.2;
-				PRODUCT_BUNDLE_IDENTIFIER = rybkr.UnixLife;
+				MARKETING_VERSION = 2.0;
+				PRODUCT_BUNDLE_IDENTIFIER = rybkr.LifeSaver;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -283,18 +283,18 @@
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 4;
 				DEVELOPMENT_TEAM = 57935535S7;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
-				INFOPLIST_KEY_NSPrincipalClass = UnixLifeView;
+				INFOPLIST_KEY_NSPrincipalClass = LifeSaverView;
 				INSTALL_PATH = "$(HOME)/Library/Screen Savers";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@loader_path/../Frameworks",
 				);
-				MARKETING_VERSION = 1.2;
-				PRODUCT_BUNDLE_IDENTIFIER = rybkr.UnixLife;
+				MARKETING_VERSION = 2.0;
+				PRODUCT_BUNDLE_IDENTIFIER = rybkr.LifeSaver;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -307,7 +307,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		3782A694306DB92A00E6593D /* Build configuration list for PBXProject "UnixLife" */ = {
+		3782A694306DB92A00E6593D /* Build configuration list for PBXProject "LifeSaver" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				3782A6A1306DB92A00E6593D /* Debug */,
@@ -316,7 +316,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		3782A6A3306DB92A00E6593D /* Build configuration list for PBXNativeTarget "UnixLife" */ = {
+		3782A6A3306DB92A00E6593D /* Build configuration list for PBXNativeTarget "LifeSaver" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				3782A6A4306DB92A00E6593D /* Debug */,

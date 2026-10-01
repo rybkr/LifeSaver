@@ -2,10 +2,10 @@
 import PackageDescription
 
 let package = Package(
-    name: "UnixLifeCore",
-    products: [.library(name: "UnixLifeCore", targets: ["UnixLifeCore"])],
+    name: "LifeSaverCore",
+    products: [.library(name: "LifeSaverCore", targets: ["LifeSaverCore"])],
     targets: [
-        .target(name: "UnixLifeCore", path: "UnixLife/Core"),
-        .testTarget(name: "UnixLifeCoreTests", dependencies: ["UnixLifeCore"])
+        .target(name: "LifeSaverCore", path: "LifeSaver/Core"),
+        .testTarget(name: "LifeSaverCoreTests", dependencies: ["LifeSaverCore"])
     ]
 )

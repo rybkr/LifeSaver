@@ -9,10 +9,10 @@ struct SmokeCheck {
         let path = CommandLine.arguments[1]
         let bundle = Bundle(path: path)!
         guard let type = bundle.principalClass as? ScreenSaverView.Type,
-              let view = type.init(frame: NSRect(x: 0, y: 0, width: 1440, height: 900), isPreview: false)
+              let view = type.init(frame: NSRect(x: 0, y: 0, width: 1440, height: 900), isPreview: true)
         else { fatalError("Screensaver principal class could not be loaded") }
         view.startAnimation()
-        Thread.sleep(forTimeInterval: 1.0)
+        RunLoop.current.run(until: Date().addingTimeInterval(1))
         view.animateOneFrame()
         let bitmap = NSBitmapImageRep(bitmapDataPlanes: nil, pixelsWide: 1440, pixelsHigh: 900,
             bitsPerSample: 8, samplesPerPixel: 4, hasAlpha: true, isPlanar: false,
